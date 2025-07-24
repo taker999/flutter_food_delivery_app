@@ -2,14 +2,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'pages/home/view/home_page.dart';
 import 'pages/login/view/login_page.dart';
-import 'provider/auth_providers.dart';
+import 'pages/main/view/main_page.dart';
+import 'provider/auth_state_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(ProviderScope(child: const MyApp()));
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends ConsumerWidget {
@@ -20,11 +20,12 @@ class MyApp extends ConsumerWidget {
     final authState = ref.watch(authStateProvider);
 
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Food Delivery App',
       home: authState.when(
         data: (user) {
           if (user != null) {
-            return const HomePage();
+            return const MainPage();
           } else {
             return const LoginPage();
           }

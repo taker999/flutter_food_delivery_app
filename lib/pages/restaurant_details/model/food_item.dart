@@ -11,9 +11,9 @@ class FoodItem {
     required this.imageUrl,
   });
 
-  factory FoodItem.fromMap(String id, Map<String, dynamic> data) {
+  factory FoodItem.fromMap(Map<String, dynamic> data) {
     return FoodItem(
-      id: id,
+      id: data['id'],
       name: data['name'] ?? '',
       price: (data['price'] ?? 0).toDouble(),
       imageUrl: data['imageUrl'] ?? '',
@@ -22,9 +22,11 @@ class FoodItem {
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'name': name,
       'price': price,
       'imageUrl': imageUrl,
     };
   }
+
 }

@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../home/view/home_page.dart';
-import '../provider/login_provider.dart';
-
-final loginLoadingProvider = StateProvider<bool>((ref) => false);
+import '../../sign_up/view/sign_up_page.dart';
+import '../provider/log_in_provider.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -18,33 +17,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   String _email = '';
   String _password = '';
 
-  void _login() async {
-    if (!_formKey.currentState!.validate()) return;
-    _formKey.currentState!.save();
-
-    ref.read(loginLoadingProvider.notifier).state = true;
-    final authService = ref.read(authServiceProvider);
-
-    final success = await authService.signIn(_email, _password);
-    ref.read(loginLoadingProvider.notifier).state = false;
-
-    if (success) {
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomePage()),
-      );
-    } else {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login failed')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isLoading = ref.watch(loginLoadingProvider);
+    final logInState = ref.watch(logInProvider);
 
     return Scaffold(
       body: Center(
@@ -60,22 +35,56 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 TextFormField(
                   decoration: const InputDecoration(labelText: 'Email'),
                   keyboardType: TextInputType.emailAddress,
-                  validator: (val) => val != null && val.contains('@') ? null : 'Invalid email',
+                  validator:
+                      (val) =>
+                          val != null && val.contains('@')
+                              ? null
+                              : 'Invalid email',
                   onSaved: (val) => _email = val!.trim(),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   decoration: const InputDecoration(labelText: 'Password'),
                   obscureText: true,
-                  validator: (val) => val != null && val.length >= 6 ? null : 'Min 6 chars',
+                  validator:
+                      (val) =>
+                          val != null && val.length >= 6 ? null : 'Min 6 chars',
                   onSaved: (val) => _password = val!.trim(),
                 ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    const Text("Don't have an account?"),
+                    InkWell(
+                      onTap:
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SignUpPage(),
+                            ),
+                          ),
+                      child: const Text(
+                        " Sign Up",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 24),
-                isLoading
-                    ? const CircularProgressIndicator()
-                    : ElevatedButton(
-                  onPressed: _login,
-                  child: const Text('Login'),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
+                      await ref
+                          .read(logInProvider.notifier)
+                          .signIn(_email, _password);
+                    }
+                  },
+                  child:
+                      logInState.isLoading
+                          ? const CircularProgressIndicator()
+                          : const Text('Sign In'),
                 ),
               ],
             ),
