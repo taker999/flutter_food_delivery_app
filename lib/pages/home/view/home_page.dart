@@ -16,21 +16,37 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Restaurants'),
+        title: const Text(
+          'Restaurants',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
-          Stack(
-            children: [
-              IconButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CartPage()),
-                  );
-                },
-                icon: const Icon(Icons.shopping_cart),
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CartPage()),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Stack(
+                children: [
+                  SizedBox(
+                      width: 30,
+                      height: 50,
+                      child: Icon(Icons.shopping_cart, color: Colors.grey[600])),
+
+                  Positioned(
+                    right: 0,
+                    child: Text(
+                      totalCartItemCount.toString(),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
-              Text(totalCartItemCount.toString()),
-            ],
+            ),
           ),
         ],
       ),
@@ -43,10 +59,16 @@ class HomePage extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final restaurant = restaurants[index];
                 return ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: NetworkImage(restaurant.imageUrl),
+                  leading: Hero(
+                    tag: restaurant.id,
+                    child: CircleAvatar(
+                      backgroundImage: NetworkImage(restaurant.imageUrl),
+                    ),
                   ),
-                  title: Text(restaurant.name),
+                  title: Text(
+                    restaurant.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   subtitle: Text(restaurant.description),
                   onTap: () {
                     // Navigate to Restaurant Details

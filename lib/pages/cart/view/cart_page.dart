@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../utils/widgets/button/custom_elevated_button.dart';
 import '../../order_success/view/order_success_page.dart';
 import '../model/cart_item.dart';
 import '../provider/cart_provider.dart';
@@ -11,11 +12,14 @@ class CartPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cartItems = ref.watch(cartProvider);
-    final cartNotifier = ref.read(cartProvider.notifier);
-    final total = cartNotifier.totalPrice;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Your Cart')),
+      appBar: AppBar(
+        title: const Text(
+          'Your Cart',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
       body:
           cartItems.isEmpty
               ? const Center(child: Text('Your cart is empty'))
@@ -26,37 +30,54 @@ class CartPage extends ConsumerWidget {
                       itemCount: cartItems.length,
                       itemBuilder: (context, index) {
                         final item = cartItems[index];
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage: NetworkImage(item.item.imageUrl),
-                          ),
-                          title: Text(item.item.name),
-                          subtitle: Text(
-                            '₹${item.item.price.toStringAsFixed(2)}',
-                          ),
-                          trailing: SizedBox(
-                            width: 120,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.remove),
-                                  onPressed:
-                                      () => cartNotifier.decreaseQuantity(
-                                        item.item.id,
+                        return Column(
+                          children: [
+                            ListTile(
+                              leading: CircleAvatar(
+                                backgroundImage: NetworkImage(item.item.imageUrl),
+                              ),
+                              title: Text(
+                                item.item.name,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(
+                                '₹${item.item.price.toStringAsFixed(2)}',
+                              ),
+                              trailing: SizedBox(
+                                width: 120,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.remove),
+                                      onPressed:
+                                          () => ref
+                                              .read(cartProvider.notifier)
+                                              .decreaseQuantity(item.item.id),
+                                    ),
+                                    Text(
+                                      item.quantity.toString(),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
                                       ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.add),
+                                      onPressed:
+                                          () => ref
+                                              .read(cartProvider.notifier)
+                                              .increaseQuantity(item.item.id),
+                                    ),
+                                  ],
                                 ),
-                                Text('${item.quantity}'),
-                                IconButton(
-                                  icon: const Icon(Icons.add),
-                                  onPressed:
-                                      () => cartNotifier.increaseQuantity(
-                                        item.item.id,
-                                      ),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Divider(),
+                            ),
+                          ],
                         );
                       },
                     ),
@@ -64,6 +85,7 @@ class CartPage extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
+                      color: Colors.grey[100],
                       border: Border(
                         top: BorderSide(color: Colors.grey.shade300),
                       ),
@@ -71,19 +93,28 @@ class CartPage extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
-                          'Total: ₹${total.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: Text(
+                            'Total: ₹${ref.read(cartProvider.notifier).totalPrice.toStringAsFixed(2)}',
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 10),
-                        ElevatedButton(
+
+                        // place order button
+                        CustomElevatedButton(
+                          buttonColor: Colors.grey.shade600,
+                          icon: Icons.shopping_cart,
+                          text: 'Place Order',
+                          textColor: Colors.white,
                           onPressed: () {
-                            // You can trigger Firestore order save here
                             List<CartItem> orderedItems = cartItems;
-                            cartNotifier.clearCart();
+                            ref.read(cartProvider.notifier).clearCart();
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
@@ -93,9 +124,7 @@ class CartPage extends ConsumerWidget {
                                     ),
                               ),
                             );
-                            // Navigator.pop(context);
                           },
-                          child: const Text('Place Order'),
                         ),
                       ],
                     ),

@@ -5,8 +5,6 @@ import '../../../provider/auth_service_provider.dart';
 
 import '../../../services/firebase/auth_service.dart';
 
-final logInProvider = AsyncNotifierProvider<SignInController, void>(SignInController.new);
-
 class SignInController extends AsyncNotifier<void> {
   late final AuthService _authService;
 
@@ -29,4 +27,6 @@ class SignInController extends AsyncNotifier<void> {
     }
   }
 }
+
+final logInProvider = AsyncNotifierProvider<SignInController, void>(SignInController.new);
 

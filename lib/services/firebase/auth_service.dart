@@ -7,6 +7,8 @@ class AuthService {
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
+  User? get currentUser => _auth.currentUser;
+
   Future<bool> signIn(String email, String password) async {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
@@ -17,20 +19,8 @@ class AuthService {
     }
   }
 
-  Future<bool> signUp(String email, String password) async {
-    try {
-      await _auth.createUserWithEmailAndPassword(email: email, password: password);
-      return true;
-    } catch (e) {
-      log('Signup error: $e');
-      return false;
-    }
-  }
-
 
   Future<void> signOut() async {
     await _auth.signOut();
   }
-
-  User? get currentUser => _auth.currentUser;
 }

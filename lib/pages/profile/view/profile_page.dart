@@ -1,67 +1,102 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../provider/auth_service_provider.dart';
-import '../../login/view/login_page.dart';
-import '../provider/log_out_provider.dart';
+import '../../../utils/widgets/button/custom_elevated_button.dart';
+import '../provider/current_user_provider.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.read(authServiceProvider).currentUser;
-    final logOutState = ref.watch(logOutProvider);
-
-    if (user == null) {
-      return const Center(child: Text("User not logged in"));
-    }
+    final userAsync = ref.watch(currentUserProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Profile"),
+        title: const Text(
+          'Profile',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            const CircleAvatar(
-              radius: 50,
-              backgroundColor: Colors.deepOrange,
-              child: Icon(Icons.person, size: 50, color: Colors.white),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              user.email ?? 'No Email',
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'UID: ${user.uid}',
-              style: const TextStyle(color: Colors.grey),
-            ),
-            const Spacer(),
-            ElevatedButton.icon(
-              onPressed: () async {
-                await ref.read(logOutProvider.notifier).signOut();
+      body: userAsync.when(
+        data: (user) {
+          if (user == null) {
+            return const Center(child: Text('User not found'));
+          }
 
-                if (context.mounted) {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginPage()),
-                        (route) => false,
-                  );
-                }
-              },
-              icon: const Icon(Icons.logout),
-              label: logOutState.isLoading
-                  ? const CircularProgressIndicator()
-                  : const Text("Logout"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+          return Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Center(
+              child: Column(
+                children: [
+                  // Profile Picture
+                  SizedBox(
+                    width: 100,
+                    child:
+                        user.profileImageUrl.isNotEmpty
+                            ? ClipRRect(
+                              borderRadius: BorderRadius.circular(50),
+                              child: Image.network(user.profileImageUrl),
+                            )
+                            : null,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  const Divider(),
+
+                  // Name
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    width: double.infinity,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Name:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                        Text(user.name, style: const TextStyle(fontSize: 18)),
+                        const SizedBox(height: 16),
+
+                        // Email
+                        const Text(
+                          'Email:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                        Text(user.email, style: const TextStyle(fontSize: 18)),
+                      ],
+                    ),
+                  ),
+
+                  const Divider(),
+
+                  const Spacer(),
+
+                  // logout button
+                  CustomElevatedButton(
+                    buttonColor: Colors.red.shade400,
+                    icon: Icons.logout,
+                    text: 'Log Out',
+                    textColor: Colors.white,
+                    onPressed: () async {
+                      await ref.read(authServiceProvider).signOut();
+                    },
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Error: $e')),
       ),
     );
   }
