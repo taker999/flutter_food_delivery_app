@@ -22,7 +22,7 @@ class RestaurantService {
 
   Future<List<FoodItem>> getFoodItems(String restaurantId) async {
     final snapshot =
-        await FirebaseFirestore.instance
+        await _firestore
             .collection('restaurants')
             .doc(restaurantId)
             .collection('foodItems')
